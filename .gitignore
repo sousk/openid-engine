@@ -1,0 +1,6 @@
+.DS_Store
+db/*.sqlite3
+doc/api
+doc/app
+log/*.log
+vendor/plugins/*
