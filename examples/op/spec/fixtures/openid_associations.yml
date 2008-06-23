@@ -1,0 +1,14 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+# one:
+#   column: value
+#
+# two:
+#   column: value
+sha256:
+  id: 1
+  handle: <%= 'openid-assoc-handle' %>
+  encryption_type: HMAC-SHA256
+  lifetime: <%= 60 * 60 * 24 %>
+  secret: <%= Base64.decode64("FOwbMI7CxUqcNmW6LUB93MuTQeS8sfTi40eoSl8BUYQ=") %>
+  created_at: <%= 2.hours.ago.to_s :db %>

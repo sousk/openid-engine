@@ -1,0 +1,14 @@
+.pushing {
+  font-size: xx-large;
+  font-weight: bold;
+}
+
+input#openid_identifier {
+  background-image: url(/images/login-bg.gif);
+  background-repeat: no-repeat;
+  background-attachment: scroll;
+  background-x-position: 0pt;
+  background-y-position: 50%;
+  padding-left: 18px;
+  width: 220px;
+} 

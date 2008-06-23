@@ -1,0 +1,10 @@
+Story: XRDS based Discovery
+
+  see OpenID Authentication2.0 7.3.2
+
+  Scenario: finding OP endpoint identifier
+    Given http://localhost:3000/server as the user-supplied identifier
+    Given application/xrds+xml to HTTP-Accept of the request
+    When  consumer tells to the provider
+    When  consumer gets response
+    Then  response contains URI with http://localhost:3000/server and Type with http://specs.openid.net/auth/2.0/server

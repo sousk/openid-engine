@@ -1,0 +1,11 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+localhost:
+  op_endpoint: 'http://localhost:3000/server'
+  handle: '{HMAC-SHA256}{48339560}{2+ByUg==}'
+  encryption_type: HMAC-SHA256
+  secret: <%= Base64.decode64 'CdLSTO25ff9cOUNlxCpK4y13WDHDLM6kAncIYejVzHA=' %>
+  expiration: 2010/01/01
+#
+# two:
+#   column: value

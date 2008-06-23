@@ -1,0 +1,31 @@
+Autotest.add_hook :initialize do |at|
+  %w{.svn .hg .git}.each {|exception|at.add_exception(exception)}
+  
+  at.add_mapping(%r%plugins/openid_engine%) {|f, m|
+    ['spec/controllers/sessions_controller_spec.rb']
+  }
+  # at.clear_mappings
+  # at.add_mapping(%r%^lib/foo.rb$%) {|f, m|
+  #   puts "::::::::::::::::::::::::::: #{f}"
+  #   ['lib/openid/foo.rb']
+  # }
+  # at.add_mapping(%r%^lib/openid/(.*)_spec\.rb$%) { |f, m|
+  #   puts "::::::::::::::::::::::::::: f"
+  #   ['foo.rb']
+  # }
+  
+  # at.add_mapping(%r%^lib/openid/rp_spec.rb$%) { |f, m|
+  #   puts "::::::::::::::::::::::: f"
+  #   f
+  #   # ["spec/models/#{m[2].singularize}_spec.rb"] + at.files_matching(%r%^spec\/views\/#{m[2]}/.*_spec\.rb$%)
+  # }
+  # at.add_mapping(%r%^lib/[\w]+/spec/([\w]+)_spec.rb$%) { |f, m|
+  #   puts "::::::::::::::::::::::: f"
+  #   # ["spec/models/#{m[2].singularize}_spec.rb"] + at.files_matching(%r%^spec\/views\/#{m[2]}/.*_spec\.rb$%)
+  # }
+  
+  # at.add_mapping(%r%^(test|spec)/fixtures/(.*).yml$%) { |_, m|
+  #   ["spec/models/#{m[2].singularize}_spec.rb"] + at.files_matching(%r%^spec\/views\/#{m[2]}/.*_spec\.rb$%)
+  # }
+  
+end
