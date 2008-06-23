@@ -1,3 +1,4 @@
+
 POLICY_SH256 = {
   :ns => 'http://specs.openid.net/auth/2.0',
   :assoc_type => 'HMAC-SHA256',
