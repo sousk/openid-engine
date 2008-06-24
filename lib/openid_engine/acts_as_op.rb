@@ -4,16 +4,27 @@ module OpenidEngine::ActsAsOp
     params.has_key?('openid.ns') || params.has_key?('openid_identifier')
   end
   
+  def op
+    @op ||= OpenidEngine::Op.new
+  end
+  
   def process_indirect_communication
     case params['openid.mode']
-    when 'checkid_setup' then login_required && process_authentication_request
+    when 'checkid_setup' then login_required && process_checkid_request
     when 'associate'     then process_associate_request
     else
       raise "not implemented yet :#{params['openid.mode']}"
     end
   end
   
-  def process_authentication_request
+  # TODO: support negative assertion
+  # TODO: support checkid_immediate mode
+  # TODO: support stateless mode (or determine to do not)
+  def process_checkid_request
+    
+  end
+  
+  def process_authentication_request_old
     realm, return_to = params['openid.realm'], params['openid.return_to']
     
     assoc = OpenidAssociation.find_by_handle params['openid.assoc_handle']
@@ -202,4 +213,8 @@ module OpenidEngine::ActsAsOp
     end
   end
   
+  private
+  def get_stored_association(handle)
+    OpenidAssociation.find_by_handle handle, :conditions => ["expiration > ?", Time.now.utc]
+  end
 end
