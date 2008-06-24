@@ -6,7 +6,7 @@ module OpenidEngine::ActsAsOp
   
   def process_indirect_communication
     case params['openid.mode']
-    when 'checkid_setup' then process_authentication_request
+    when 'checkid_setup' then login_required && process_authentication_request
     when 'associate'     then process_associate_request
     else
       raise "not implemented yet :#{params['openid.mode']}"
@@ -30,8 +30,8 @@ module OpenidEngine::ActsAsOp
     message = {
       :mode => 'id_res',
       :op_endpoint => server_url,
-      :claimed_id => user_url(1),
-      :identity => 1,
+      :claimed_id => user_url(current_user),
+      :identity => current_user.id,
       :return_to => params['openid.return_to'],
       :response_nonce => gen_nonce,
       :assoc_handle => assoc.handle,
@@ -87,24 +87,14 @@ module OpenidEngine::ActsAsOp
     assoc = OpenidAssociation.new({
       :handle => handle,
       :encryption_type => assoc_type,
-      :lifetime => 60 * 60 * 24 * 7, #sec
+      :lifetime => 3, #60 * 60 * 24 * 7, #sec
       :secret => secret
     })
     
-    # response encryption, gen dh_server_public, enc_mac_key
     consumer_public = decode_integer params['openid.dh_consumer_public']
     server_private = gen_private_key(mod)
     enc_mac_key = gen_enc_mac_key(consumer_public, server_private, secret, mod)
     server_public = gen_public_key(server_private, gen, mod)
-    
-    # encoded_pubkey = Base64.encode64(btwoc_encode(server_public)).gsub("\n", "")
-    # encoded_pubkey = to_base64 btwoc_encode(server_public)
-    # decoded_pubkey = btwoc_decode Base64.decode64(encoded_pubkey)
-    #     puts "--"
-    # puts "---- #{encoded_pubkey.length}--#{encoded_pubkey}--"
-    #     puts "cert #{server_public == decoded_pubkey}"
-    #     puts "cert #{encoded_pubkey == encode_integer(server_public)}"
-    #     puts "--"
     
     if assoc.save
       response = {
@@ -129,25 +119,7 @@ module OpenidEngine::ActsAsOp
   def gen_private_key(mod)
 	  1 + rand(mod - 2)
 	end
-	
-  # mac_key = @dh.xor_secret(@hash_func,
-  #                          @consumer_pubkey,
-  #                          secret)
-  # return {
-  #     'dh_server_public' => CryptUtil.num_to_base64(@dh.public),
-  #     'enc_mac_key' => Util.to_base64(mac_key),
-  #     }
-  # def xor_secret(algorithm, composite, secret)
-  #   dh_shared = get_shared_secret(composite)
-  #   packed_dh_shared = OpenID::CryptUtil.num_to_binary(dh_shared)
-  #   hashed_dh_shared = algorithm.call(packed_dh_shared)
-  #   return DiffieHellman.strxor(secret, hashed_dh_shared)
-  # end
-  # def get_shared_secret(composite)
-  #   DiffieHellman.powermod(composite, @private, @modulus)
-  # end
-  
-  
+	  
   def gen_enc_mac_key(consumer_public, pkey, secret, mod)
     dh_shared = mod_exp(consumer_public, pkey, mod)
     hashed_shared = Digest::SHA256.digest(btwoc_encode(dh_shared))
@@ -155,18 +127,8 @@ module OpenidEngine::ActsAsOp
   end
   
   def strxor(s, t)
-    #     result = (0..s.length-1).collect { |i| s[i] ^ t[i] }
-    # result.pack("C*")
     result = (0..s.length-1).collect { |i| (s[i] ^ t[i]).chr }
     result.join
-		
-    # if String.method_defined? :bytes
-    #   s.bytes.zip(t.bytes).map{|sb,tb| sb^tb}.pack('C*')
-    # else
-    #   indices = 0...(s.length)
-    #   chrs = indices.collect {|i| (s[i]^t[i]).chr}
-    #   chrs.join("")
-    # end
   end
   
   # 8.2.3, base64(btwoc(g ^ xb mod p))

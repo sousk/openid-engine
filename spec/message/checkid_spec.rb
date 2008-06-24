@@ -44,10 +44,10 @@ describe OpenidEngine::Message::CheckidRequest do
 
     it "should require realm when return_to is omitted" do
       msg = get_request_message
-      msg.requires.should be_include :realm
+      msg.requires.should be_include(:realm)
       
       msg = get_request_message :return_to => 'http://localhost:8080/'
-      msg.requires.should_not be_include :realm
+      msg.requires.should_not be_include(:realm)
     end
     
   end

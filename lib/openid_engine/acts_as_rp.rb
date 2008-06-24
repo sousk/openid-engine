@@ -118,7 +118,7 @@ module OpenidEngine::ActsAsRp
   def verify_signatures
     assoc = OpenidAssociation.find_by_handle params['openid.assoc_handle']
     unless assoc
-      raise "not implemented yet"
+      raise "not implemented yet (assoc missing)"
     end
     
     # generate signature
