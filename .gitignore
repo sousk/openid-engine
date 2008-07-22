@@ -3,4 +3,4 @@ db/*.sqlite3
 doc/api
 doc/app
 log/*.log
-vendor/plugins/*
+vendor/plugins/openid_engine

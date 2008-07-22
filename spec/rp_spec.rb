@@ -34,14 +34,6 @@ describe OpenidEngine::Rp do
   #   end
   # end
   
-  describe "#verify_discovered_information" do
-    it "should return nothing with valid params" 
-    # do
-    #   @rp.should_receive(:discover_by_yadis).and_return [SERVICE_SIGNON]
-    #   @rp.verify_discovered_information Message.factory(:id_res)
-    # end
-  end
-  
   describe "#verify_return_to" do
     def do_verify(return_to)
       @rp.verify_return_to return_to, 'http://hoge.example.com/foo/bar'
