@@ -45,7 +45,7 @@ module OpenidEngine::ActsAsRp
   end
   
   def get_association(endpoint)
-    assoc = OpenidAssociation.find_by_op_endpoint(endpoint, :conditions => ["expiration > ?", Time.now.utc])
+    assoc = OpenidAssociation.find_by_op_endpoint(endpoint, :conditions => ["expiration > ?", Time.now.to_s(:db)])
     unless assoc
       assoc_response = rp.request_association(endpoint)
       if assoc_response

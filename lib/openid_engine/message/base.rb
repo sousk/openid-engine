@@ -37,30 +37,32 @@ module OpenidEngine
       end
       
       def validate
-        @errors = []
-  	    @rules.each { |key, procs|
-  	      if self.has_key? key
-    	      value = self[key]
-    	      Array(procs).each{ |proc|
-              begin
-    	          proc.call(key, value)
-              rescue ValidationError => e
-                @errors << e.to_s
-              end
-    	      }
-  	      end
-  	    }
-	      @requires.each { |k|
-  	      v = self[k]
-  	      @errors << "value of #{k} is required but empty or nil" if v.nil? || v.empty?
-  	    }
+        @errors = [] # clear
+        if @rules
+    	    @rules.each { |key, procs|
+    	      if self.has_key? key
+      	      value = self[key]
+      	      Array(procs).each{ |proc|
+                begin
+      	          proc.call(key, value)
+                rescue ValidationError => e
+                  @errors << e.to_s
+                end
+      	      }
+    	      end
+    	    }
+  	    end
+  	    if @requires
+  	      @requires.each { |k|
+    	      v = self[k]
+    	      @errors << "value of #{k} is required but empty or nil" if v.nil? || v.empty?
+    	    }
+  	    end
       end
       
       def valid?
         @errors.empty?
       end
-      
-      class ValidationError < StandardError; end
     end # end Validator
     
     class Base < Hash
@@ -68,11 +70,16 @@ module OpenidEngine
       
       def initialize(message)
         add_requires :ns
-        add_rules :ns => matched(TYPE[:ns])
+        add_rules :ns => matched(TYPE[:ns])        
         self[:ns] = TYPE[:ns]
         
-        self.merge!(message)
+        # merge hashes, self and message
+        message.each{ |k, v|
+          self[k.to_s.gsub(/^openid\./, '').to_sym] = v
+        }
         validate
+        
+        super nil
       end
           
       def to_query

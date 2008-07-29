@@ -1,5 +1,11 @@
-require File.dirname(__FILE__) + '/../spec_helper'
+require File.dirname(__FILE__) + '/../helpers/op_helper'
 require "openid_engine/message/checkid"
+
+
+describe OpenidEngine::Message::CheckidResponse do
+  include OpenidEngine
+end
+
 
 describe OpenidEngine::Message::CheckidRequest do
   include OpenidEngine
@@ -22,7 +28,7 @@ describe OpenidEngine::Message::CheckidRequest do
       @return_to = 'http://example.com/return_to'
     end
     
-    it "should be the same for return_to (default)" do
+    it "should have default value same as return_to" do
       msg = get_request_message :return_to => @return_to
       msg.should have_key(:realm)
       msg[:realm].should == @return_to

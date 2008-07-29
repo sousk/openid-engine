@@ -5,7 +5,7 @@ module OpenidEngine::ActsAsOp
   end
   
   def op
-    @op ||= OpenidEngine::Op.new
+    @op ||= OpenidEngine::Op.new(:assoc_storage => OpenidAssociation)
   end
   
   def process_indirect_communication
@@ -21,7 +21,15 @@ module OpenidEngine::ActsAsOp
   # TODO: support checkid_immediate mode
   # TODO: support stateless mode (or determine to do not)
   def process_checkid_request
+    req = OpenidEngine::Message.factory(:checkid_request, params)
     
+    assoc = op.associations.find_by_handle req[:assoc_handle]
+    raise "assoc missing" unless assoc
+    raise "assoc expired" if assoc.expired?
+    
+    if req[:return_to]
+      op.verify_return_to req
+    end
   end
   
   def process_authentication_request_old
@@ -213,8 +221,12 @@ module OpenidEngine::ActsAsOp
     end
   end
   
-  private
   def get_stored_association(handle)
-    OpenidAssociation.find_by_handle handle, :conditions => ["expiration > ?", Time.now.utc]
+    assoc = OpenidAssociation.find_by_handle handle, :conditions => ["expiration > ?", Time.now.to_s(:db)]
+    if assoc
+      assoc
+    else
+      raise OpenidEngine::Error, "no association found or expired"
+    end
   end
 end

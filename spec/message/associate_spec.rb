@@ -20,8 +20,8 @@ describe OpenidEngine::Message::AssociateRequest do
   
   it "should have validation rules" do
     msg = get_response valid_params
-    msg.rules.size.should >= 3
-    msg.requires.size.should >= 3
+    msg.rules.size.should >= 2
+    msg.requires.size.should >= 2
   end
   
   describe "#valid?" do
