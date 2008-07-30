@@ -2,11 +2,6 @@ require File.dirname(__FILE__) + '/../helpers/op_helper'
 require "openid_engine/message/checkid"
 
 
-describe OpenidEngine::Message::CheckidResponse do
-  include OpenidEngine
-end
-
-
 describe OpenidEngine::Message::CheckidRequest do
   include OpenidEngine
   
