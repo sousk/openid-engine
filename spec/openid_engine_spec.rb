@@ -3,6 +3,12 @@ require File.dirname(__FILE__) + '/spec_helper'
 describe 'OpenidEngine' do
   include OpenidEngine
   
+  describe "#url_encode" do
+    it {
+      url_encode('&+').should == '%26%2B'
+    }
+  end
+  
   describe "#random_strings" do
     it "should be the length specified" do
       random_strings(32).size.should == 32

@@ -1,5 +1,9 @@
 require "openid_engine"
+require "uri"
+
 module OpenidEngine::ActsAsOp
+  include OpenidEngine
+  
   def openid_request?
     params.has_key?('openid.ns') || params.has_key?('openid_identifier')
   end
@@ -16,20 +20,32 @@ module OpenidEngine::ActsAsOp
       raise "not implemented yet :#{params['openid.mode']}"
     end
   end
-  
+    
   # TODO: support negative assertion
   # TODO: support checkid_immediate mode
   # TODO: support stateless mode (or determine to do not)
   def process_checkid_request
     req = OpenidEngine::Message.factory(:checkid_request, params)
     
+    if req[:return_to]
+      op.verify_return_to_against_realm req
+    end
+    
     assoc = op.associations.find_by_handle req[:assoc_handle]
     raise "assoc missing" unless assoc
     raise "assoc expired" if assoc.expired?
     
-    if req[:return_to]
-      op.verify_return_to req
-    end
+    res = OpenidEngine::Message::PositiveAssertion.new({
+      :op_endpoint => server_url,
+      :claimed_id => user_url(current_user),
+      :identity => current_user.id,
+      :return_to => req[:return_to],
+      :response_nonce => op.make_nonce,
+      :assoc_handle => assoc.handle
+    })
+    res.sign! assoc
+    
+    indirect_response res
   end
   
   def process_authentication_request_old
@@ -204,7 +220,7 @@ module OpenidEngine::ActsAsOp
     # TODO validate field parameters
     fields[:ns] = 'http://specs.openid.net/auth/2.0' unless fields[:ns]
     #TODO, validation
-    url = (params['openid.return_to'] || params['openid.realm']) + "?" + fields.map{ |k,v| "openid.#{k}=#{v}" }.join("&")
+    url = (params['openid.return_to'] || params['openid.realm']) + "?" + fields.map{ |k,v| "openid.#{k}=#{url_encode(v)}" }.join("&")
     redirect_to url
   end
   

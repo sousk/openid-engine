@@ -16,3 +16,17 @@ def valid_params
     :assoc_handle => '1'
   }
 end
+
+def op
+  @op ||= OpenidEngine::Op.new
+end
+
+def assoc
+  unless @assoc
+    @assoc = Object.new
+    @assoc.stub!(:handle).and_return('handle')
+    @assoc.stub!(:encryption_type).and_return('HMAC-SHA256')
+    @assoc.stub!(:secret).and_return('secret')
+  end
+  @assoc
+end

@@ -2,7 +2,7 @@ require "openid_engine"
 require "openid_engine/yadis"
 require "openid_engine/identifier"
 require "openid_engine/associator"
-require "openid_engine/message/checkid"
+require "openid_engine/message"
 
 module OpenidEngine
   class Rp

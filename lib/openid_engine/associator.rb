@@ -1,7 +1,7 @@
 require "openid_engine"
 require "base64"
 require "openssl"
-require "openid_engine/message"
+require "openid_engine/message/associate_response"
 
 module OpenidEngine
   
@@ -66,7 +66,7 @@ module OpenidEngine
 				:dh_gen => encode_integer(@gen),
 				:dh_consumer_public => encode_integer(public_key)
 		  })
-		  Message.factory(:associate_response, res)
+		  OpenidEngine::Message::AssociateResponse.new res
 		end
 		
 		def extract_secret(res, private_key, p)

@@ -1,5 +1,4 @@
 require "openid_engine/message/base"
-require "openid_engine/message/associate"
 
 module OpenidEngine
   module Message

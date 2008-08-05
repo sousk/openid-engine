@@ -1,6 +1,7 @@
+- OP, key-parameters should be configurable (op_endpoint, claimed_id, identity)
 - write README
 - XRDS generator
 - OpenidAssociation model/spec/migration generator
 - Change OpenidEngine::Message scheme (call new, then invoke validate)
-- Message::Base accept only parameters preffixed with 'openid.' (if possible)
-- implement sec 9.2 recommendation about realm
+- Message::Base should accept only parameters preffixed with 'openid.' (if possible)
+- implement sec 9.2's recommendation spec about realm (reject excess wild-card)

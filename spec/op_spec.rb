@@ -16,6 +16,23 @@ describe OpenidEngine::Op do
     }
   end
   
+  describe "#make_nonce" do
+    def nonce
+      @op.make_nonce
+    end
+    
+    it "should be a string 255 characters or less in length" do # spec 10.1
+      nonce.should be_kind_of(String)
+      nonce.size.should <= 255
+    end
+    
+    it "should start with the current time on server" do
+      now = Time.now.utc # All times must be in the UTC timezone indicated with a 'Z'
+      Time.stub!(:now).and_return(now)
+      nonce.should =~ /^#{now.strftime('%Y-%m-%dT%H:%M:%SZ')}/
+    end
+  end
+  
   describe "#verify_return_to" do
     before(:each) do
       @params = valid_params

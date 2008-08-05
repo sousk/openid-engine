@@ -11,8 +11,10 @@ module OpenidEngine::ActsAsRp
   
   def process_openid_request(config)
     case
-    when params[:openid_identifier] then start_openid_authentication(config)
-    when params['openid.mode'] == 'id_res' then complete_openid_authentication
+    when params[:openid_identifier] then log('start auth'); start_openid_authentication(config)
+    when params['openid.mode'] == 'id_res' then log('process assertion'); process_assertion
+    else
+      log("no mode available #{params['openid.mode']}")
     end
   end
   
@@ -44,9 +46,19 @@ module OpenidEngine::ActsAsRp
     # no information available
   end
   
+  def retrieve_association(option)
+    col, value = option.to_a.flatten
+    assoc = OpenidAssociation.send("find_by_#{col}", value)
+    raise Error, "assoc missing #{assoc} ::" unless assoc
+    raise Error, "assoc expired" if assoc && assoc.expired?
+    assoc
+  end
+  
   def get_association(endpoint)
-    assoc = OpenidAssociation.find_by_op_endpoint(endpoint, :conditions => ["expiration > ?", Time.now.to_s(:db)])
-    unless assoc
+    begin
+      assoc = retrieve_association :op_endpoint => endpoint
+    rescue Error => e
+      log "#{e}, try to get new assoc"
       assoc_response = rp.request_association(endpoint)
       if assoc_response
         assoc = OpenidAssociation.new_from_response(endpoint, assoc_response)
@@ -56,7 +68,7 @@ module OpenidEngine::ActsAsRp
     assoc
   end
   
-  def complete_openid_authentication
+  def process_assertion
     raise "authorized" if verify_openid_response
   end
   
@@ -116,19 +128,21 @@ module OpenidEngine::ActsAsRp
   end
   
   def verify_signatures
-    assoc = OpenidAssociation.find_by_handle params['openid.assoc_handle']
-    unless assoc
-      raise "not implemented yet (assoc missing)"
+    begin
+      assoc = retrieve_association :handle => params['openid.assoc_handle']
+    rescue Error => e
+      raise "#{e}, handle::#{params['openid.assoc_handle']}::, not implemented yet (assoc missing)"
     end
+    
+    op_sig = params['openid.sig']
     
     # generate signature
     keyvalues = params['openid.signed'].split(',').collect { |key| 
-       "%s:%s\n" % [key, params["openid.#{key}"]]
-    }.join
-    
-    op_sig = params['openid.sig']
-    digester = OpenSSL::Digest::SHA256.new
+      "%s:%s\n" % [key, params["openid.#{key}"]]
+    }.join    
+    digester = assoc.encryption_type == 'HMAC-SHA1' ? OpenSSL::Digest::SHA1.new : OpenSSL::Digest::SHA256.new
     sig = Base64.encode64(OpenSSL::HMAC.digest(digester, assoc.secret, keyvalues)).chomp
-    raise "openid.sig not matched, rp::#{sig}::, op::#{op_sig}" unless sig == op_sig.gsub(/\s/, '+') #FIXME rails bug?
+    
+    raise "openid.sig not matched, rp::#{sig}::, op::#{op_sig}" unless sig == op_sig
   end
 end

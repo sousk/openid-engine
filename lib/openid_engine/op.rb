@@ -12,6 +12,10 @@ module OpenidEngine
       @associations = options[:assoc_storage]
     end
     
+    def make_nonce
+      Time.now.getutc.strftime('%Y-%m-%dT%H:%M:%SZ') + random_strings(6)
+    end
+    
     # see sec 9.2: Realms
     def verify_return_to_against_realm(message)
       realm, rt = partialize_url(message[:realm]), partialize_url(message[:return_to])

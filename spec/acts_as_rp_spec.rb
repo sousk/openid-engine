@@ -41,4 +41,5 @@ describe OpenidEngine::ActsAsRp do
       @controller.openid_identifier.should == 'http://localhost:3000/server'
     end
   end
+  
 end
