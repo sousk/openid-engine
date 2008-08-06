@@ -1,7 +1,7 @@
 require "openid_engine"
 require "base64"
 require "openssl"
-require "openid_engine/message/associate_response"
+require "openid_engine/message/association_response"
 
 module OpenidEngine
   
@@ -59,14 +59,14 @@ module OpenidEngine
 		
     private
 		def request_association(endpoint, public_key)
-		  res = @agent.direct endpoint, Message.factory(:associate_request, {
+		  res = @agent.direct endpoint, Message.factory(:association_request, {
 		    :assoc_type => @policy[:assoc_type],
 				:session_type => @policy[:session_type],
 				:dh_modulus => encode_integer(@mod),
 				:dh_gen => encode_integer(@gen),
 				:dh_consumer_public => encode_integer(public_key)
 		  })
-		  OpenidEngine::Message::AssociateResponse.new res
+		  OpenidEngine::Message::AssociationResponse.new res
 		end
 		
 		def extract_secret(res, private_key, p)

@@ -2,7 +2,7 @@ require "openid_engine/message/base"
 module OpenidEngine
   module Message
     
-    class AssociateRequest < Base
+    class AssociationRequest < Base
       def initialize(message)
         add_requires :mode, :assoc_type, :session_type
         add_rules :mode => matched('associate'),

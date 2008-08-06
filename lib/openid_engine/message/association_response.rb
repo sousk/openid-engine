@@ -2,7 +2,7 @@ require "openid_engine/message/base"
 module OpenidEngine
   module Message
     
-    class AssociateResponse < Base
+    class AssociationResponse < Base
       def initialize(message)
         add_requires :assoc_handle, :assoc_type, :expires_in, :session_type
         add_rules :assoc_handle => [less_than(255), charcode_between(33, 126)],
