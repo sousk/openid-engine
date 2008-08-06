@@ -47,51 +47,7 @@ module OpenidEngine::ActsAsOp
     
     indirect_response res
   end
-  
-  def process_authentication_request_old
-    realm, return_to = params['openid.realm'], params['openid.return_to']
     
-    assoc = OpenidAssociation.find_by_handle params['openid.assoc_handle']
-    raise "assoc missing" unless assoc
-    
-    # check realm
-    if return_to
-      pattern = Regexp.new realm.split("*.").map{ |part| Regexp.escape part }.join(".*\.?")
-      raise "return_to not matched against realm, return_to:#{return_to}, realm:#{realm}" unless return_to =~ pattern
-    end
-    
-    signing_keys = [:op_endpoint, :return_to, :response_nonce, :assoc_handle, :claimed_id, :identity]
-    
-    message = {
-      :mode => 'id_res',
-      :op_endpoint => server_url,
-      :claimed_id => user_url(current_user),
-      :identity => current_user.id,
-      :return_to => params['openid.return_to'],
-      :response_nonce => gen_nonce,
-      :assoc_handle => assoc.handle,
-      :signed => signing_keys.map { |key| key.to_s }.join(',')
-    }
-    message[:sig] = sign_message assoc, signing_keys, message
-    
-    indirect_response message
-  end
-  
-  def gen_nonce
-    random_string(6, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") + 
-      Time.now.getutc.strftime('%Y-%m-%dT%H:%M:%SZ')
-  end
-  
-  def sign_message(assoc, keys, message)
-    keyvalues = keys.map{ |key|
-       "%s:%s\n" % [key, message[key]]
-    }.join
-    
-    digester = OpenSSL::Digest::SHA256.new
-    sig = Base64.encode64(OpenSSL::HMAC.digest(digester, assoc.secret, keyvalues)).chomp
-    sig
-  end
-  
   def process_direct_communication
     case params['openid.mode']
     when 'associate' then process_associate_request
@@ -222,27 +178,5 @@ module OpenidEngine::ActsAsOp
     #TODO, validation
     url = (params['openid.return_to'] || params['openid.realm']) + "?" + fields.map{ |k,v| "openid.#{k}=#{url_encode(v)}" }.join("&")
     redirect_to url
-  end
-  
-  def requested_user
-    unless @requested_user
-      @requested_user = User.find(params[:id]) or render :text => "requested user not found", :status => 404
-    end
-    @requested_user
-  end
-  
-  def catch_openid_request
-    case params['openid.mode']
-    when 'id_setup'
-    end
-  end
-  
-  def get_stored_association(handle)
-    assoc = OpenidAssociation.find_by_handle handle, :conditions => ["expiration > ?", Time.now.to_s(:db)]
-    if assoc
-      assoc
-    else
-      raise OpenidEngine::Error, "no association found or expired"
-    end
   end
 end
