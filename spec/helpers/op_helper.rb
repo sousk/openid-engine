@@ -5,11 +5,25 @@ require "openid_engine/acts_as_op"
 include OpenidEngine::ActsAsOp
 
 def mock_rails_controller
-  eval("def params; @params ||= {}; end") unless respond_to? :params
+  unless respond_to? :params
+    # eval("def params; @params ||= {}; end") 
+    def params
+      @params ||= {}
+    end
+    
+    def assign_params(*hash)
+      Array(hash).each { |k,v| @params[k] = v }
+    end
+  end
+  
   unless Kernel.const_defined?('OpenidAssociation')
     eval("class OpenidAssociation; end")
-    OpenidAssociation.stub!(:find_by_handle).and_return(mocked_assoc)
   end
+end
+
+def mock_op_association(assoc=mocked_assoc)
+  OpenidAssociation.stub!(:find_by_handle).and_return assoc
+  OpenidAssociation.stub!(:find_by_op_endpoint).and_return assoc
 end
 
 def valid_params

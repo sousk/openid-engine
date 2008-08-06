@@ -3,21 +3,14 @@ require File.dirname(__FILE__) + '/helpers/op_helper'
 describe OpenidEngine::Op do
   before(:each) do
     mock_rails_controller
+    mock_op_association
   end
   
   describe "association" do
     it "should retrieve stored association" do
+      op.association.should respond_to(:find_by_handle)
+      op.association.should respond_to(:find_by_op_endpoint)
     end
-  end
-  
-  describe "#association" do
-    before(:each) do
-      @assocs = op.association
-    end
-    
-    it {
-      @assocs.should respond_to(:find_by_handle)
-    }
   end
   
   describe "#make_nonce" do

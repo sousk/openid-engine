@@ -20,7 +20,7 @@ module OpenidEngine::ActsAsOp
       raise "not implemented yet :#{params['openid.mode']}"
     end
   end
-    
+  
   # TODO: support negative assertion
   # TODO: support checkid_immediate mode
   # TODO: support stateless mode (or determine to do not)
@@ -67,7 +67,7 @@ module OpenidEngine::ActsAsOp
   def process_association_request
     req = Message::AssociationRequest.new params
     
-    
+    # assoc = op.association.create
   end
   
   def process_association_request_old
