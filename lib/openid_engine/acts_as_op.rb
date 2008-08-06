@@ -116,7 +116,7 @@ module OpenidEngine::ActsAsOp
   def gen_private_key(mod)
 	  1 + rand(mod - 2)
 	end
-	  
+	
   def gen_enc_mac_key(consumer_public, pkey, secret, mod)
     dh_shared = mod_exp(consumer_public, pkey, mod)
     hashed_shared = Digest::SHA256.digest(btwoc_encode(dh_shared))
