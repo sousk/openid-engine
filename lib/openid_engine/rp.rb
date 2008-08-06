@@ -14,13 +14,9 @@ module OpenidEngine
   	  
     attr_reader :agent, :policy, :associator
     
-    def initialize(policy={})
-      @policy = {
-        :assoc_type => 'HMAC-SHA256',
-        :session_type => 'DH-SHA256'
-      }.merge(policy)
+    def initialize
       @agent = Agent.new
-      @associator = Associator.factory(@policy, @agent, mod_gen)
+      @associator = Associator.factory(@agent, mod_gen)
     end
     
     # override me to use your gen/modulus
@@ -29,7 +25,7 @@ module OpenidEngine
 		end
 		
 		def request_association(endpoint)
-		  @associator.associate(endpoint, @policy)
+		  @associator.associate(endpoint)
 		end
     
     # TODO: XRI discovery

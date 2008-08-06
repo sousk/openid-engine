@@ -23,7 +23,7 @@ module OpenidEngine
       
       def matched(to)
         lambda { |k,v|
-          raise ValidationError, "value of #{k} (#{v}) should be matched to '#{to}'" unless v == to }
+          raise ValidationError, "#{k} (#{v}) should be matched against '#{to}'" unless v == to }
       end
       
       def less_than(limit)
@@ -33,7 +33,7 @@ module OpenidEngine
       
       def numeric
 	      lambda { |k, v|
-	        raise ValidationError, "value of #{k} (#{v}) should be numeric" unless v =~ /^\d+$/ }
+	        raise ValidationError, "#{k} (#{v}) should be numeric" unless v =~ /^\d+$/ }
       end
       
       def validate

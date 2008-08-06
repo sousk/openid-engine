@@ -7,18 +7,17 @@ module OpenidEngine
   
   class Associator
     class << self
-      def factory(policy, agent, mod_gen=[])
-        case
-        when policy[:session_type] == 'DH-SHA256' || 'DH-SHA1' then associator = DiffieHellmanAssociator
-        else raise "not implemented yet"
-        end
-        associator.new(policy, agent, mod_gen)
+      def factory(agent, mod_gen=[])
+        DiffieHellmanAssociator.new(agent, mod_gen)
       end
     end
   end
   
 	# A class for establishing associations with OpenID servers.
 	class DiffieHellmanAssociator < Associator
+	  
+	  DEFAULT_ASSOC_TYPE = 'HMAC-SHA256'
+	  DEFAULT_SESSION_TYPE = 'DH-SHA256'
 	  
     # see 8.4.2
     # MAC key MUST be the same length
@@ -30,10 +29,9 @@ module OpenidEngine
     #   choose a random private key xb, range
     attr_reader :mod, :gen
     
-		def initialize(policy, agent, mod_gen)
+		def initialize(agent, mod_gen)
 		  @agent = agent
 		  @mod, @gen = mod_gen
-		  @policy = policy # TDOO, maybe obselete, use policy at invoking #associate
 		end
 		
 		def gen_private_key
@@ -46,22 +44,19 @@ module OpenidEngine
 		
 		# Establishes an association with an OpenID server, indicated by server_url.
 		# Returns a ConsumerAssociation.
-		def associate(endpoint, policy={})
+		def associate(endpoint, options={})
 		  pkey = gen_private_key
-      # dh_public = gen_public_key(pkey)
-      # res = @agent.direct(endpoint, make_query(@policy, dh_public))
-      # msg = Message.factory(:associate_response, res)
-      res = request_association endpoint, gen_public_key(pkey)
+      res = request_association(endpoint, gen_public_key(pkey), options)
       raise Error, "#{res.errors.join(',')}" unless res.valid?
       res[:secret] = extract_secret(res, pkey, @mod)
       res
 		end
 		
     private
-		def request_association(endpoint, public_key)
-		  res = @agent.direct endpoint, Message.factory(:association_request, {
-		    :assoc_type => @policy[:assoc_type],
-				:session_type => @policy[:session_type],
+		def request_association(endpoint, public_key, options)
+		  res = @agent.direct endpoint, Message::AssociationRequest.new({
+		    :assoc_type => options[:assoc_type] || DEFAULT_ASSOC_TYPE,
+				:session_type => options[:session_type] || DEFAULT_SESSION_TYPE,
 				:dh_modulus => encode_integer(@mod),
 				:dh_gen => encode_integer(@gen),
 				:dh_consumer_public => encode_integer(public_key)

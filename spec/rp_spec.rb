@@ -10,13 +10,13 @@ describe OpenidEngine::Rp do
     @return_to = 'http://example.com/return_to'
   end
   
-  describe "#new" do
-    it "should accept user defined policy" do
-      rp = OpenidEngine::Rp.new :foo => 'foo'
-      policy = rp.instance_variable_get('@policy')
-      policy[:foo].should == 'foo'
-    end
-  end
+  # describe "#new" do
+  #   it "should accept user defined policy" do
+  #     rp = OpenidEngine::Rp.new :foo => 'foo'
+  #     policy = rp.instance_variable_get('@policy')
+  #     policy[:foo].should == 'foo'
+  #   end
+  # end
   
   # describe "#make_query" do
   #   it "should make checkid_setup request params" do

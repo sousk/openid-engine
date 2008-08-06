@@ -31,7 +31,7 @@ module OpenidEngine::ActsAsOp
       op.verify_return_to_against_realm req
     end
     
-    assoc = op.associations.find_by_handle req[:assoc_handle]
+    assoc = op.association.find_by_handle req[:assoc_handle]
     raise "assoc missing" unless assoc
     raise "assoc expired" if assoc.expired?
     
@@ -64,13 +64,13 @@ module OpenidEngine::ActsAsOp
     s
   end
   
-  def process_association_request
+  def process_association_request_new
     req = Message::AssociationRequest.new params
     
     # assoc = op.association.create
   end
   
-  def process_association_request_old
+  def process_association_request
     #TODO validate parameter
     #TODO check session_type, assoc_type that rp requested are both available or not
     

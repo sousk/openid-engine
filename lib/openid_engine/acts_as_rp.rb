@@ -9,9 +9,9 @@ module OpenidEngine::ActsAsRp
     params.has_key?('openid.ns') || params.has_key?('openid_identifier')
   end
   
-  def process_openid_request(config)
+  def process_openid_request(options)
     case
-    when params[:openid_identifier] then log('start auth'); start_openid_authentication(config)
+    when params[:openid_identifier] then log('start auth'); start_openid_authentication(options)
     when params['openid.mode'] == 'id_res' then log('process assertion'); process_assertion
     else
       log("no mode available #{params['openid.mode']}")
@@ -19,6 +19,7 @@ module OpenidEngine::ActsAsRp
   end
   
   def rp
+    # @op ||= OpenidEngine::Rp.new(:assoc_storage => OpenidAssociation)
     @rp ||= Rp.new
   end
   
@@ -26,20 +27,20 @@ module OpenidEngine::ActsAsRp
     normalize params[:openid_identifier]
   end
   
-  def start_openid_authentication(config={})
+  def start_openid_authentication(options={})
     rp.discover(openid_identifier) do |service|
       if service[:type].include? TYPE[:server]
-        assoc = get_association(service[:uri])
+        assoc = get_association service[:uri]
         if assoc
-          session[:last_requested_endpoint] = service[:uri]
-          msg = Message.factory :checkid_request, {
+          msg = Message::CheckidRequest.new({
             :claimed_id => TYPE[:identifier_select],
             :identity => TYPE[:identifier_select],
-            :assoc_handle => assoc.handle
-          }.merge(config)
+            :assoc_handle => assoc.handle,
+            :return_to => options[:return_to]
+          })
           
-          openid_req = service[:uri] + '?' + msg.to_query
-          redirect_to(openid_req)
+          session[:last_requested_endpoint] = service[:uri]
+          redirect_to service[:uri] + '?' + msg.to_query
         end
       end
     end
@@ -49,7 +50,7 @@ module OpenidEngine::ActsAsRp
   def retrieve_association(option)
     col, value = option.to_a.flatten
     assoc = OpenidAssociation.send("find_by_#{col}", value)
-    raise Error, "assoc missing #{assoc} ::" unless assoc
+    raise Error, "assoc missing #{assoc}" unless assoc
     raise Error, "assoc expired" if assoc && assoc.expired?
     assoc
   end
