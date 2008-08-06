@@ -2,13 +2,17 @@ require File.dirname(__FILE__) + '/helpers/op_helper'
 
 describe OpenidEngine::Op do
   before(:each) do
-    @op = OpenidEngine::Op.new
+    mock_rails_controller
   end
   
-  describe "#associations" do
+  describe "association" do
+    it "should retrieve stored association" do
+    end
+  end
+  
+  describe "#association" do
     before(:each) do
-      mock_associations
-      @assocs = @op.associations
+      @assocs = op.association
     end
     
     it {
@@ -18,7 +22,7 @@ describe OpenidEngine::Op do
   
   describe "#make_nonce" do
     def nonce
-      @op.make_nonce
+      op.make_nonce
     end
     
     it "should be a string 255 characters or less in length" do # spec 10.1
@@ -49,7 +53,7 @@ describe OpenidEngine::Op do
       ].each { |realm, return_tos|
         return_tos.each { |return_to|
           lambda {
-            @op.verify_return_to_against_realm :realm => realm, :return_to => return_to
+            op.verify_return_to_against_realm :realm => realm, :return_to => return_to
           }.should_not raise_error(OpenidEngine::Error)
         }
       }
@@ -57,7 +61,7 @@ describe OpenidEngine::Op do
     
     def run_verification_spec(error_msg, params)
       lambda {
-        @op.verify_return_to_against_realm params
+        op.verify_return_to_against_realm params
       }.should raise_error(OpenidEngine::Error, /#{error_msg}/)
     end
     
@@ -80,7 +84,7 @@ describe OpenidEngine::Op do
   
   describe "#partialize_url" do
     it {
-      u = @op.send(:partialize_url, 'https://example.com')
+      u = op.send(:partialize_url, 'https://example.com')
       u[:scheme].should == 'https'
       u[:authority].should == 'example.com'
       u[:port].should be_empty
@@ -88,7 +92,7 @@ describe OpenidEngine::Op do
     }
     
     it {
-      u = @op.send(:partialize_url, 'http://example.com:80/foo')
+      u = op.send(:partialize_url, 'http://example.com:80/foo')
       u[:scheme].should == 'http'
       u[:authority].should == 'example.com'
       u[:port].should == '80'
@@ -96,7 +100,7 @@ describe OpenidEngine::Op do
     }
     
     it {
-      u = @op.send(:partialize_url, 'http://*.example.com/foo/bar')
+      u = op.send(:partialize_url, 'http://*.example.com/foo/bar')
       u[:scheme].should == 'http'
       u[:authority].should == '*.example.com'
       u[:path].should == 'foo/bar'

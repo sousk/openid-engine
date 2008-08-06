@@ -6,10 +6,10 @@ module OpenidEngine
     FRAGMENT_REGEXP = /(?:\#((?:[-_.!~*'()a-zA-Z\d;\/?:@&=+$,\[\]]|%[a-fA-F\d]{2})*))/
     PARTIALIZE_REGEXP = %r%(\w+)://([^/:]+):?(\d+)?/?(.*)%
     
-    attr_reader :associations
+    attr_reader :association
     
     def initialize(options={})
-      @associations = options[:assoc_storage]
+      @association = options[:assoc_storage]
     end
     
     def make_nonce

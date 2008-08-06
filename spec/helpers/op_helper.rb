@@ -1,10 +1,15 @@
 require File.dirname(__FILE__) + '/../spec_helper'
 require "openid_engine/op"
+require "openid_engine/acts_as_op"
 
-def mock_associations
-  assocs = Object.new
-  assocs.stub!(:find_by_handle)
-  @op.stub!(:associations).and_return assocs
+include OpenidEngine::ActsAsOp
+
+def mock_rails_controller
+  eval("def params; @params ||= {}; end") unless respond_to? :params
+  unless Kernel.const_defined?('OpenidAssociation')
+    eval("class OpenidAssociation; end")
+    OpenidAssociation.stub!(:find_by_handle).and_return(mocked_assoc)
+  end
 end
 
 def valid_params
@@ -17,11 +22,7 @@ def valid_params
   }
 end
 
-def op
-  @op ||= OpenidEngine::Op.new
-end
-
-def assoc
+def mocked_assoc
   unless @assoc
     @assoc = Object.new
     @assoc.stub!(:handle).and_return('handle')

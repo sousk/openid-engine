@@ -15,7 +15,7 @@ module OpenidEngine::ActsAsOp
   def process_indirect_communication
     case params['openid.mode']
     when 'checkid_setup' then login_required && process_checkid_request
-    when 'associate'     then process_associate_request
+    when 'associate'     then process_association_request
     else
       raise "not implemented yet :#{params['openid.mode']}"
     end
@@ -50,7 +50,7 @@ module OpenidEngine::ActsAsOp
     
   def process_direct_communication
     case params['openid.mode']
-    when 'associate' then process_associate_request
+    when 'associate' then process_association_request
     end
   end
   
@@ -64,7 +64,13 @@ module OpenidEngine::ActsAsOp
     s
   end
   
-  def process_associate_request
+  def process_association_request
+    req = Message::AssociationRequest.new params
+    
+    
+  end
+  
+  def process_association_request_old
     #TODO validate parameter
     #TODO check session_type, assoc_type that rp requested are both available or not
     
