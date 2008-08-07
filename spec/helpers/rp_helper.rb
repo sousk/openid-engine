@@ -14,3 +14,8 @@ def mock_yadis_discovery
   OpenidEngine::Yadis.stub!(:new).and_return(yadis)
   OpenidEngine::Yadis.stub!(:initiate).and_return(yadis)
 end
+
+def mock_agent
+  @agent = Agent.new
+  Agent.should_receive(:new).and_return(@agent)
+end

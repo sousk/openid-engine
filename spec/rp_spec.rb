@@ -3,6 +3,7 @@ require File.dirname(__FILE__) + '/helpers/rp_helper'
 describe OpenidEngine::Rp do
   
   before(:each) do
+    mock_agent
     @rp = OpenidEngine::Rp.new
     @supplied_id = PARAMS[:supplied_identity]
     @type = OpenidEngine::TYPE
@@ -10,29 +11,27 @@ describe OpenidEngine::Rp do
     @return_to = 'http://example.com/return_to'
   end
   
-  # describe "#new" do
-  #   it "should accept user defined policy" do
-  #     rp = OpenidEngine::Rp.new :foo => 'foo'
-  #     policy = rp.instance_variable_get('@policy')
-  #     policy[:foo].should == 'foo'
-  #   end
-  # end
-  
-  # describe "#make_query" do
-  #   it "should make checkid_setup request params" do
-  #     params = @rp.make_query :checkid_request, 
-  #       :identity => @idsel, :claimed_id => @idsel, :assoc_handle => 'handle', :return_to => @return_to
-  #     
-  #     {
-  #       :mode => 'checkid_setup', 
-  #       :ns => @type[:ns], 
-  #       :identity => @type[:identifier_select], 
-  #       :claimed_id => @type[:identifier_select]
-  #     }.each { |key, value|  
-  #       params[key].should == value
-  #     }
-  #   end
-  # end
+  describe "#request_association" do
+    before(:each) do
+      @op_endpoint = 'http://op.example.com/'
+    end
+    
+    it "should get association" do
+      @agent.should_receive(:direct).and_return({
+        :assoc_handle => '{HMAC-SHA256}{48112eb6}{ZjnVgQ==}',
+        :assoc_type => 'HMAC-SHA256',
+        :dh_server_public => 'FrHWmH/h0E42YFFwmBY8D5yGEpd6vWuRXh4UxEM1TRmkk7hyyS166jF20yylzSUmjozR/UrH7viMobliwOaZv6AnGOHj79tCXjC64z9HhUQOb0+6j1J7z7Bk5Sg7Ea7cyrRT7I+JIn7MGQmBhjezWA7fU3ESVzJ/uNv7pksw9IA=',
+        :enc_mac_key => '84sVeyeqscGEbOWOhmZphWuUILn8IUTSUv0POxkE8fw=',
+        :expires_in => '1209600',
+        :ns => 'http://specs.openid.net/auth/2.0',
+        :session_type => 'DH-SHA256'
+      })
+      
+      assoc = @rp.request_association @op_endpoint
+      assoc.should have_key(:secret)
+      assoc.should have_key(:enc_mac_key)
+    end
+  end
   
   describe "#verify_return_to" do
     def do_verify(return_to)
@@ -84,17 +83,7 @@ describe OpenidEngine::Rp do
     }
   end
 end
-#   # describe "#start" do
-#   #   before(:each) do
-#   #   end
-#   #   
-#   #   it {
-#   #     @rp.should_receive(:normalize).and_return(@us_identifier)
-#   #     @rp.should_receive(:discover_services).and_return({})
-#   #     @rp.start(@us_identifier)
-#   #   }
-#   # end
-#   
+
 #   describe "#discover_services" do
 #     describe "when success" do
 #       before(:each) do
