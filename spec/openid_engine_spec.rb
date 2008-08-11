@@ -19,4 +19,20 @@ describe 'OpenidEngine' do
     end
   end
 
+  it "should encode integer to btwoc" do
+    @dh.encode_btwoc(0).should == "\x00"
+    @dh.encode_btwoc(127).should == "\x7F"
+    @dh.encode_btwoc(128).should == "\x00\x80"
+    @dh.encode_btwoc(255).should == "\x00\xFF"
+    @dh.encode_btwoc(32768).should == "\x00\x80\x00"
+  end
+  
+  it "should decode integer from btwoc encoded" do
+    @dh.decode_btwoc("\x00").should == 0
+    @dh.decode_btwoc("\x7F").should == 127
+    @dh.decode_btwoc("\x00\x80").should == 128
+    @dh.decode_btwoc("\x00\xFF").should == 255
+    @dh.decode_btwoc("\x00\x80\x00").should == 32768
+  end
+
 end
