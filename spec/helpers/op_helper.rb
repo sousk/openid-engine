@@ -22,8 +22,8 @@ def mock_rails_controller
 end
 
 def mock_op_association(assoc=mocked_assoc)
-  OpenidAssociation.stub!(:find_by_handle).and_return assoc
-  OpenidAssociation.stub!(:find_by_op_endpoint).and_return assoc
+  OpenidAssociation.stub!(:find_by_handle).and_return assoc # to be obsoleted
+  OpenidAssociation.stub!(:find_by_op_endpoint).and_return assoc # to be obsoleted
 end
 
 def valid_params

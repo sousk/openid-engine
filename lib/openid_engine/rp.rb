@@ -3,11 +3,13 @@ require "openid_engine/yadis"
 require "openid_engine/identifier"
 require "openid_engine/associator"
 require "openid_engine/message"
+require "openid_engine/dh"
 
 module OpenidEngine
   class Rp
     include OpenidEngine
     include OpenidEngine::Identifier
+    include OpenidEngine::Dh
     
     DEFAULT_DH_MODULUS = 155172898181473697471232257763715539915724801966915404479707795314057629378541917580651227423698188993727816152646631438561595825688188889951272158842675419950341258706556549803580104870537681476726513255747040765857479291291572334510643245094715007229621094194349783925984760375594985848253359305585439638443
   	DEFAULT_DH_GEN = 2
@@ -24,8 +26,28 @@ module OpenidEngine
 			[DEFAULT_DH_MODULUS, DEFAULT_DH_GEN]
 		end
 		
-		def request_association(endpoint)
-		  @associator.associate(endpoint)
+		def request_association(endpoint, options={})
+      @associator.associate(endpoint)
+    end
+    
+    def foo
+      pkey, pubkey = create_keys
+      
+      # res = request_association(endpoint, gen_public_key(pkey), options)
+      res = @agent.direct endpoint, Message::AssociationRequest.new({
+		    :assoc_type => options[:assoc_type] || 'HMAC-SHA256',
+				:session_type => options[:session_type] || 'DH-SHA256',
+				:dh_modulus => encode_integer(@mod),
+				:dh_gen => encode_integer(@gen),
+				:dh_consumer_public => encode_integer(pubkey)
+		  })
+		  assoc_msg = OpenidEngine::Message::AssociationResponse.new res
+		  
+      
+      raise Error, "#{res.errors.join(',')}" unless res.valid?
+      res[:secret] = extract_secret(res, pkey, @mod)
+      res
+		  
 		end
     
     # TODO: XRI discovery

@@ -1,6 +1,12 @@
 require "base64"
 
 module OpenidEngine::Dh
+  
+  def create_keys
+    pkey = create_private_key
+    [pkey, create_public_key(pkey)]
+  end
+  
   def create_private_key
     1 + rand(mod - 2)
   end
