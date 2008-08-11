@@ -35,4 +35,9 @@ describe 'OpenidEngine' do
     @dh.decode_btwoc("\x00\x80\x00").should == 32768
   end
 
+  it "should extract btwoced integer from encoded one" do
+    encoded = @dh.encode_integer(123)
+    @dh.decode_integer(encoded).should == 123
+  end
+  
 end

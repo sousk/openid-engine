@@ -36,6 +36,14 @@ module OpenidEngine
   	n
 	end
 	
+	def encode_integer(int)
+	  Base64.encode64(encode_btwoc(int)).chomp
+	end
+	
+	def decode_integer(str)
+	  decode_btwoc Base64.decode64(str)
+	end
+	
   def log(stat)
     puts "::::::::::::#{stat}" if DEBUG
   end
