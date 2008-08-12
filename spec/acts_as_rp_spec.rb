@@ -4,12 +4,11 @@ describe OpenidEngine::ActsAsRp do
   include OpenidEngine
   
   before(:each) do
+    mock_rails_controller
+    @controller.extend OpenidEngine::ActsAsRp
+    
     @rp = OpenidEngine::Rp.new
     @params = {}
-    
-    @controller = (class SessionController
-      include OpenidEngine::ActsAsRp
-    end).new
     
     @controller.stub!(:rp).and_return(@rp)
     @controller.stub!(:params).and_return(@params)

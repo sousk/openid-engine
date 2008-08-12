@@ -1,9 +1,18 @@
 require "openid_engine/rp"
+require "openid_engine/associatable"
 
 module OpenidEngine::ActsAsRp
 
   include OpenidEngine
   include OpenidEngine::Identifier
+  
+  def self.included(base)
+    OpenidAssociation.class_eval("include OpenidEngine::Associatable")
+  end
+  
+  def log(msg)
+    logger.info msg
+  end
   
   def openid_request?
     params.has_key?('openid.ns') || params.has_key?('openid_identifier')
@@ -19,7 +28,6 @@ module OpenidEngine::ActsAsRp
   end
   
   def rp
-    # @op ||= OpenidEngine::Rp.new(:assoc_storage => OpenidAssociation)
     @rp ||= Rp.new
   end
   
@@ -44,7 +52,7 @@ module OpenidEngine::ActsAsRp
         end
       end
     end
-    # no information available
+    log "no information available against '#{openid_identifier}'"
   end
   
   def retrieve_association(option)
@@ -55,7 +63,7 @@ module OpenidEngine::ActsAsRp
     assoc
   end
   
-  def get_association(endpoint)
+  def get_association_old(endpoint)
     begin
       assoc = retrieve_association :op_endpoint => endpoint
     rescue Error => e
@@ -65,6 +73,17 @@ module OpenidEngine::ActsAsRp
         assoc = OpenidAssociation.new_from_response(endpoint, assoc_response)
         assoc.save
       end
+    end
+    assoc
+  end
+  
+  def get_association(op_endpoint)
+    begin
+      assoc = retrieve_association :op_endpoint => op_endpoint
+    rescue Error => e
+      log "#{e}, try to get new assoc"
+      assoc = OpenidAssociation.request op_endpoint
+      assoc.save
     end
     assoc
   end

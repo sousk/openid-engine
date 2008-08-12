@@ -20,24 +20,24 @@ describe 'OpenidEngine' do
   end
 
   it "should encode integer to btwoc" do
-    @dh.encode_btwoc(0).should == "\x00"
-    @dh.encode_btwoc(127).should == "\x7F"
-    @dh.encode_btwoc(128).should == "\x00\x80"
-    @dh.encode_btwoc(255).should == "\x00\xFF"
-    @dh.encode_btwoc(32768).should == "\x00\x80\x00"
+    encode_btwoc(0).should == "\x00"
+    encode_btwoc(127).should == "\x7F"
+    encode_btwoc(128).should == "\x00\x80"
+    encode_btwoc(255).should == "\x00\xFF"
+    encode_btwoc(32768).should == "\x00\x80\x00"
   end
   
   it "should decode integer from btwoc encoded" do
-    @dh.decode_btwoc("\x00").should == 0
-    @dh.decode_btwoc("\x7F").should == 127
-    @dh.decode_btwoc("\x00\x80").should == 128
-    @dh.decode_btwoc("\x00\xFF").should == 255
-    @dh.decode_btwoc("\x00\x80\x00").should == 32768
+    decode_btwoc("\x00").should == 0
+    decode_btwoc("\x7F").should == 127
+    decode_btwoc("\x00\x80").should == 128
+    decode_btwoc("\x00\xFF").should == 255
+    decode_btwoc("\x00\x80\x00").should == 32768
   end
 
   it "should extract btwoced integer from encoded one" do
-    encoded = @dh.encode_integer(123)
-    @dh.decode_integer(encoded).should == 123
+    encoded = encode_integer(123)
+    decode_integer(encoded).should == 123
   end
   
 end

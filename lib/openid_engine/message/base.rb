@@ -55,9 +55,10 @@ module OpenidEngine
   	    if @requires
   	      @requires.each { |k|
     	      v = self[k]
-    	      @errors << "value of #{k} is required but empty or nil" if v.nil? || v.empty?
+    	      @errors << "value of #{k} is required but empty or nil" if v.nil? || v.to_s.empty?
     	    }
   	    end
+  	    self
       end
       
       def valid?
