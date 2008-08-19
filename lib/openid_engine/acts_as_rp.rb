@@ -63,20 +63,6 @@ module OpenidEngine::ActsAsRp
     assoc
   end
   
-  def get_association_old(endpoint)
-    begin
-      assoc = retrieve_association :op_endpoint => endpoint
-    rescue Error => e
-      log "#{e}, try to get new assoc"
-      assoc_response = rp.request_association(endpoint)
-      if assoc_response
-        assoc = OpenidAssociation.new_from_response(endpoint, assoc_response)
-        assoc.save
-      end
-    end
-    assoc
-  end
-  
   def get_association(op_endpoint)
     begin
       assoc = retrieve_association :op_endpoint => op_endpoint
