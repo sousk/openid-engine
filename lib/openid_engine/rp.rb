@@ -52,7 +52,7 @@ module OpenidEngine
       yadis.services || []
     end
     
-    def verify_return_to(return_to, cert)
+    def verify_return_url(return_to, cert)
       r = URI.parse return_to
       c = URI.parse cert
       [:scheme, :host, :port, :path].each { |part|

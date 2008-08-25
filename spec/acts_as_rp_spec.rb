@@ -18,7 +18,7 @@ describe OpenidEngine::ActsAsRp do
     @controller.stub!(:params).and_return(params)
   end
   
-  describe "should find openid request" do
+  describe "should detect openid request" do
     it {
       @controller.openid_request?.should_not be_true
     }
@@ -41,4 +41,10 @@ describe OpenidEngine::ActsAsRp do
     end
   end
   
+  # describe "process OpenID Assertion" do
+  #   it {
+  #     @controller.should_receive(:verify_assertion)
+  #     @controller.process_assertion
+  #   }
+  # end
 end

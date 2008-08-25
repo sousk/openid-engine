@@ -8,6 +8,7 @@ module OpenidEngine::ActsAsRp
   
   def self.included(base)
     OpenidAssociation.class_eval("include OpenidEngine::Associatable")
+    # base.class_eval("before_filter :catch_openid_response")
   end
   
   def log(msg)
@@ -16,6 +17,56 @@ module OpenidEngine::ActsAsRp
   
   def openid_request?
     params.has_key?('openid.ns') || params.has_key?('openid_identifier')
+  end
+  
+  # http://svn.rubyonrails.org/rails/plugins/open_id_authentication/lib/open_id_authentication.rb
+  # http://svn.rubyonrails.org/rails/plugins/open_id_authentication/README
+  def authenticate_with_openid(options={}, &block)
+    case
+    when params[:openid_identifier]
+      log('start auth')
+      begin_openid_authentication normalize(params[:openid_identifier]), options, &block
+    when params['openid.mode'] == 'id_res'
+      log('process assertion')
+      complete_openid_authentication options, &block
+    else
+      log("no mode available #{params['openid.mode']}")
+    end
+  end
+  
+  def begin_openid_authentication(openid_identifier, options, &block)
+    rp.discover(openid_identifier) do |service|
+      if service[:type].include? TYPE[:server]
+        assoc = get_association service[:uri]
+        if assoc
+          msg = Message::CheckidRequest.new({
+            :claimed_id => TYPE[:identifier_select],
+            :identity => TYPE[:identifier_select],
+            :assoc_handle => assoc.handle,
+            :return_to => options[:return_to] || requested_url
+          })
+          
+          session[:last_requested_endpoint] = service[:uri]
+          redirect_to service[:uri] + '?' + msg.to_query
+        end
+      end
+    end
+    log "no information available against '#{openid_identifier}'"
+  end
+  
+  def complete_openid_authentication(options, &block)
+    begin
+      assertion = Message::PositiveAssertion.new params #FIXME positive or negative
+      verify_assertion assertion
+      yield :successful, assertion
+    rescue OpenidEngine::Error => e
+      logger.error "[OpenID] #{e}"
+      # TODO yield :missing, 
+    end
+  end
+  
+  def requested_url
+    "#{request.protocol + request.host_with_port + request.relative_url_root + request.path}"
   end
   
   def process_openid_request(options)
@@ -59,7 +110,7 @@ module OpenidEngine::ActsAsRp
     col, value = option.to_a.flatten
     assoc = OpenidAssociation.send("find_by_#{col}", value)
     raise Error, "assoc missing #{assoc}" unless assoc
-    raise Error, "assoc expired" if assoc && assoc.expired?
+    raise Error, "assoc expired (created:#{assoc.created_at}, lifetime:#{assoc.lifetime})" if assoc && assoc.expired?
     assoc
   end
   
@@ -75,12 +126,13 @@ module OpenidEngine::ActsAsRp
   end
   
   def process_assertion
-    raise "authorized" if verify_openid_response
+    assertion = Message::PositiveAssertion.new params #FIXME positive or negative
+    verify_assertion assertion
+    raise "authorized"
   end
   
-  def verify_openid_response
+  def verify_assertion(assertion)
     # rp.verify_return_to(params['openid.return_to'], request.url)
-    verify_return_url
     verify_discovered_information if rp.url?(params['openid.claimed_id'])
     check_nonce
     verify_signatures

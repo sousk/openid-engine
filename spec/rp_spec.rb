@@ -1,4 +1,6 @@
 require File.dirname(__FILE__) + '/helpers/rp_helper'
+require File.dirname(__FILE__) + '/helpers/message_helper'
+
 
 describe OpenidEngine::Rp do
   
@@ -9,6 +11,39 @@ describe OpenidEngine::Rp do
     @type = OpenidEngine::TYPE
     @idsel = @type[:identifier_select]
     @return_to = 'http://example.com/return_to'
+  end
+  
+  describe "Verifying Assertion" do
+    before(:each) do
+      @assertion = mocked_message('Assertion')
+      @requested_url = "http://rp.example.com/return_to"
+    end
+    
+    describe "#verify_return_to" do
+      def do_verify(return_to)
+        @rp.verify_return_url return_to, 'http://hoge.example.com/foo/bar'
+      end
+
+      it "should return nothing with valid params" do
+        lambda {
+          do_verify('http://hoge.example.com/foo/bar')
+        }.should_not raise_error
+      end
+
+      it "should raise error with invalid params" do
+        %w(http://huni.example.com/foo/bar http://hoge.example.com/foo http://hoge.example.com/foo/bar?1).each { |url|
+          lambda {
+            do_verify url
+          }.should raise_error(OpenidEngine::Error)
+        }
+      end
+    end
+    
+    describe "#check_nonce" do
+      it "should description" do
+        
+      end
+    end
   end
   
   describe "#request_association" do
@@ -33,26 +68,6 @@ describe OpenidEngine::Rp do
     end
   end
   
-  describe "#verify_return_to" do
-    def do_verify(return_to)
-      @rp.verify_return_to return_to, 'http://hoge.example.com/foo/bar'
-    end
-    
-    it "should return nothing with valid params" do
-      lambda {
-        do_verify('http://hoge.example.com/foo/bar')
-      }.should_not raise_error
-    end
-    
-    it "should raise error with invalid params" do
-      %w(http://huni.example.com/foo/bar http://hoge.example.com/foo http://hoge.example.com/foo/bar?1).each { |url|
-        lambda {
-          do_verify url
-        }.should raise_error(OpenidEngine::Error)
-      }
-    end
-  end
-
   describe "#discover" do
     it "should call given block when service discovered" do
       @rp.should_receive(:discover_by_yadis).with(@supplied_id).and_return([SERVICE_SERVER])
@@ -83,35 +98,3 @@ describe OpenidEngine::Rp do
     }
   end
 end
-
-#   describe "#discover_services" do
-#     describe "when success" do
-#       before(:each) do
-#         mock_yadis_discovery
-#       end
-#       
-#       it "should return an array of hashed services when success" do
-#         @rp.discover_services(@us_identifier).should be_kind_of(Array)
-#       end
-#     end
-#     
-#     # it "should try XRI based discovery when the identier is XRI" do
-#     #   @id.should_receive(:xri?).and_return(true)
-#     #   @rp.should_receive(:discover_by_xri)
-#     #   @rp.discovery(@id)
-#     # end
-#     # 
-#     # it "should try Yadis protocol discovery when the identier is not xri (url)" do
-#     #   @id.should_receive(:xri?).and_return(false)
-#     #   @rp.should_receive(:discover_by_yadis)
-#     #   @rp.discovery(@id)
-#     # end
-#     # 
-#     # it "should try HTML based discovery when xrds discovery failed" do
-#     #   @id.should_receive(:xri?).and_return(true)
-#     #   @rp.should_receive(:discover_by_xri).and_return(nil)
-#     #   @rp.should_receive(:discover_from_html)
-#     #   @rp.discovery(@id)
-#     # end
-#   end
-# end

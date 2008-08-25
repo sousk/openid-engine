@@ -33,7 +33,7 @@ module OpenidEngine::ActsAsOp
     
     assoc = op.association.find_by_handle req[:assoc_handle]
     raise "assoc missing" unless assoc
-    raise "assoc expired" if assoc.expired?
+    raise Error, "assoc expired (created:#{assoc.created_at}, lifetime:#{assoc.lifetime})" if assoc && assoc.expired?
     
     res = OpenidEngine::Message::PositiveAssertion.new({
       :op_endpoint => server_url,
